@@ -69,19 +69,19 @@
 
   <h1>小徐麥塊伺服器 連線狀態 - Server Status</h1>
 
-  <div class="server" id="proxy">Proxy 讀取中...</div>
+  <div class="server" id="proxy">託管分支連線埠 (Velocity) 讀取中...</div>
   <div class="server" id="lobby">大廳伺服器 (Lobby) 讀取中...</div>
-  <div class="server" id="survival">生存【1】服 讀取中...</div>
-  <div class="server" id="creative">建造【1】服 讀取中...</div>
+  <div class="server" id="survival">生存【1】服 (Survial) 讀取中...</div>
+  <div class="server" id="creative">建造【1】服 (Creative) 讀取中...</div>
 
   <footer>狀態每 30 秒自動更新一次｜最後更新：<span id="last-update">尚未更新</span></footer>
 
   <script>
     const servers = [
-      { id: "proxy", name: "Proxy", host: "mc.hsuddfps.com" },
+      { id: "proxy", name: "託管分支連線埠 (Velocity)", host: "mc.hsuddfps.com" },
       { id: "lobby", name: "大廳伺服器 (Lobby)", host: "mc.hsuddfps.com:30065" },
-      { id: "survival", name: "生存【1】服", host: "mc.hsuddfps.com:30066" },
-      { id: "creative", name: "建造【1】服", host: "mc.hsuddfps.com:30067" }
+      { id: "survival", name: "生存【1】服 (Survial)", host: "mc.hsuddfps.com:30066" },
+      { id: "creative", name: "建造【1】服 (Creative)", host: "mc.hsuddfps.com:30067" }
     ];
 
     async function fetchStatus(server) {
