@@ -43,7 +43,7 @@
     .title-main {
       color: var(--green);
       font-size: 2.4em;
-      text-shadow: 0 0 15px var(--green);
+      text-shadow: none;
     }
 
     .title-sub {
@@ -51,21 +51,21 @@
       font-size: 1.4em;
       font-weight: normal;
       margin-top: 0.2em;
-      text-shadow: 0 0 10px var(--green);
+      text-shadow: none;
     }
 
     .server {
-      background-color: var(--bg-card);
       border-left: 6px solid var(--green-dark);
       margin: 1em auto;
       padding: 1em;
       border-radius: 10px;
       max-width: 600px;
       box-shadow: 0 0 10px rgba(109, 207, 244, 0.3);
-    }
+      background-color: rgba(28, 28, 28, 0.85); /* 預設為在線色 */
 
     .server.offline {
       border-left-color: var(--red);
+      background-color: rgba(40, 20, 20, 0.85); /* 離線時背景偏紅深色 */
       box-shadow: 0 0 10px rgba(255, 77, 77, 0.3);
     }
 
