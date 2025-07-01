@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>Minecraft 多伺服器狀態</title>
+  <style>
+    body {
+      background-color: #111;
+      color: #eee;
+      font-family: sans-serif;
+      text-align: center;
+      padding: 2em;
+    }
+
+    h1 {
+      color: #00ff7f;
+      text-shadow: 1px 1px 5px #00ff7f;
+    }
+
+    .server {
+      background-color: #1e1e1e;
+      padding: 1.5em;
+      border-radius: 10px;
+      margin: 1em auto;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 0 10px rgba(0, 255, 127, 0.3);
+    }
+
+    .online { color: #00ff7f; }
+    .offline { color: #ff4d4d; }
+
+    /* 頂部進度條 */
+    #progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 4px;
+      width: 0%;
+      background-color: #66ccff;
+      transition: width 0.4s ease;
+      z-index: 9999;
+    }
+  </style>
+</head>
+<body>
+  <div id="progress-bar"></div>
+
+  <h1>Minecraft Server 狀態面板</h1>
+
+  <div class="server" id="proxy">Proxy: 讀取中...</div>
+  <div class="server" id="lobby">Lobby: 讀取中...</div>
+  <div class="server" id="survival">Survival: 讀取中...</div>
+
+  <script>
+    const servers = [
+      { id: "proxy", name: "Proxy", host: "mc.hsuddfps.com" },
+      { id: "lobby", name: "Lobby", host: "mc.hsuddfps.com:25566" },
+      { id: "survival", name: "Survival", host: "mc.hsuddfps.com:25567" }
+    ];
+
+    async function fetchStatus(server) {
+      const res = await fetch(`https://api.mcsrvstat.us/2/${server.host}`);
+      const data = await res.json();
+      const el = document.getElementById(server.id);
+
+      if (!data.online) {
+        el.innerHTML = `<strong>${server.name}</strong>: <span class="offline">🟥 離線</span>`;
+      } else {
+        el.innerHTML = `<strong>${server.name}</strong>: <span class="online">🟩 在線 (${data.players.online} / ${data.players.max})<br>${data.motd.clean.join(" ")}</span>`;
+      }
+    }
+
+    async function refresh() {
+      const progress = document.getElementById("progress-bar");
+      progress.style.width = "0%";
+      progress.style.display = "block";
+
+      // 模擬進度條逐步前進
+      setTimeout(() => { progress.style.width = "30%"; }, 100);
+      setTimeout(() => { progress.style.width = "60%"; }, 300);
+
+      await Promise.all(servers.map(fetchStatus));
+
+      // 結束進度條
+      progress.style.width = "100%";
+      setTimeout(() => {
+        progress.style.display = "none";
+        progress.style.width = "0%";
+      }, 600);
+    }
+
+    refresh();
+    setInterval(refresh, 30000);
+  </script>
+</body>
+</html>
