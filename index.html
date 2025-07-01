@@ -2,27 +2,38 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>小徐麥塊伺服器狀態</title>
+  <title>小徐麥塊伺服器 - Server Status</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="https://fav.farm/🖥️" type="image/x-icon">
   <style>
     :root {
       --green: #6dcff4;
-      --green-dark: #00aa66;
+      --green-dark: #3399cc;
       --red: #ff4d4d;
       --blue: #66ccff;
       --bg-dark: #0e0e0e;
-      --bg-card: #202830;
+      --bg-card: rgba(28, 28, 28, 0.85);
       --text: #e0e0e0;
     }
 
     body {
-      background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
-      color: var(--text);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      text-align: center;
       margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--text);
+      text-align: center;
       padding: 2em 1em;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: url('https://hsuddfps.github.io/mc-status/Background_image.jpg') center/cover no-repeat;
+      filter: blur(8px) brightness(0.7);
+      z-index: -1;
     }
 
     h1 {
@@ -31,65 +42,48 @@
 
     .title-main {
       color: var(--green);
-      font-size: 1.8em;
+      font-size: 2.4em;
       text-shadow: 0 0 15px var(--green);
     }
 
     .title-sub {
       color: var(--green);
-      font-size: 1.3em;
-      font-weight: bold;
+      font-size: 1.4em;
+      font-weight: normal;
       margin-top: 0.2em;
       text-shadow: 0 0 10px var(--green);
     }
 
     .server {
       background-color: var(--bg-card);
-      margin: 1.5em auto;
-      padding: 1.5em;
-      border-radius: 15px;
+      border-left: 6px solid var(--green-dark);
+      margin: 1em auto;
+      padding: 1em;
+      border-radius: 10px;
       max-width: 600px;
-      box-shadow: 0 0 20px rgba(0, 255, 156, 0.1);
-      border: 2px solid var(--green-dark);
-      transition: all 0.3s ease;
+      box-shadow: 0 0 10px rgba(109, 207, 244, 0.3);
     }
 
     .server.offline {
-      border-color: var(--red);
-      box-shadow: 0 0 20px rgba(255, 77, 77, 0.2);
+      border-left-color: var(--red);
+      box-shadow: 0 0 10px rgba(255, 77, 77, 0.3);
     }
 
-    .server strong {
-      display: block;
-      font-size: 1.2em;
-      margin-bottom: 0.5em;
-    }
-
-    .online {
-      color: var(--green); /* 保留綠色 */
-      font-weight: bold;
-    }
-
-    .offline {
-      color: var(--red);
-      font-weight: bold;
-    }
+    .online { color: var(--green); }
+    .offline { color: var(--red); }
 
     .motd {
       font-size: 1em;
       margin-top: 0.6em;
-      color: var(--blue);
-      font-weight: bold;
       white-space: pre-wrap;
     }
 
     footer {
-      margin-top: 3em;
-      color: #888;
+      margin-top: 2em;
+      color: #ccc;
       font-size: 0.9em;
     }
 
-    /* 進度條 */
     #progress-bar {
       position: fixed;
       top: 0;
@@ -112,7 +106,7 @@
 
   <div class="server" id="proxy">託管分支連線埠 (Velocity) 讀取中...</div>
   <div class="server" id="lobby">大廳伺服器 (Lobby) 讀取中...</div>
-  <div class="server" id="survival">生存【1】服 (Survial) 讀取中...</div>
+  <div class="server" id="survival">生存【1】服 (Survival) 讀取中...</div>
   <div class="server" id="creative">建造【1】服 (Creative) 讀取中...</div>
 
   <footer>狀態每 30 秒自動更新一次｜最後更新：<span id="last-update">尚未更新</span></footer>
@@ -128,21 +122,21 @@
     async function fetchStatus(server) {
       const el = document.getElementById(server.id);
       el.className = "server";
-      el.innerHTML = `<strong>${server.name}</strong>讀取中...`;
+      el.innerHTML = `${server.name} 讀取中...`;
 
       try {
         const res = await fetch(`https://api.mcsrvstat.us/2/${server.host}`);
         const data = await res.json();
 
         if (!data.online) {
-          el.innerHTML = `<strong>${server.name}</strong><span class="offline">🔴 離線</span>`;
+          el.innerHTML = `<strong>${server.name}</strong>: <span class="offline">🔴 離線</span>`;
           el.classList.add("offline");
         } else {
-          el.innerHTML = `<strong>${server.name}</strong><span class="online">🟢 在線 (${data.players.online} / ${data.players.max})</span>` +
-            (data.motd?.clean ? `<div class="motd">${data.motd.clean.join("\n")}</div>` : "");
+          el.innerHTML = `<strong>${server.name}</strong>: <span class="online">🟢 在線 (${data.players.online} / ${data.players.max})</span>` +
+            (data.motd?.html ? `<div class="motd">${data.motd.html.join("<br>")}</div>` : "");
         }
       } catch {
-        el.innerHTML = `<strong>${server.name}</strong><span class="offline">❌ 查詢失敗</span>`;
+        el.innerHTML = `<strong>${server.name}</strong>: <span class="offline">❌ 查詢失敗</span>`;
         el.classList.add("offline");
       }
     }
