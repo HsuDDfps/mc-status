@@ -2,12 +2,21 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>Minecraft 狀態面板</title>
+  <title>小徐麥塊伺服器 - Server Status</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
+    :root {
+      --green: #00ff9c;
+      --red: #ff4d4d;
+      --blue: #66ccff;
+      --bg-dark: #0e0e0e;
+      --bg-card: #1a1a1a;
+      --text: #e0e0e0;
+    }
+
     body {
-      background-color: #0e0e0e;
-      color: #e0e0e0;
+      background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+      color: var(--text);
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       text-align: center;
       margin: 0;
@@ -15,39 +24,48 @@
     }
 
     h1 {
-      color: #00ff9c;
-      font-size: 2.2em;
-      margin-bottom: 1em;
-      text-shadow: 0 0 10px #00ff9c;
+      color: var(--green);
+      font-size: 2.5em;
+      margin-bottom: 1.5em;
+      text-shadow: 0 0 15px var(--green);
     }
 
     .server {
-      background-color: #1c1c1c;
-      border-left: 6px solid #00ff9c;
-      margin: 1em auto;
-      padding: 1em;
-      border-radius: 10px;
+      background-color: var(--bg-card);
+      margin: 1.5em auto;
+      padding: 1.5em;
+      border-radius: 15px;
       max-width: 600px;
-      box-shadow: 0 0 10px rgba(0, 255, 156, 0.2);
+      box-shadow: 0 0 20px rgba(0, 255, 156, 0.1);
+      border: 2px solid var(--green);
+      transition: all 0.3s ease;
     }
 
     .server.offline {
-      border-left-color: #ff4d4d;
-      box-shadow: 0 0 10px rgba(255, 77, 77, 0.2);
+      border-color: var(--red);
+      box-shadow: 0 0 20px rgba(255, 77, 77, 0.2);
     }
 
-    .online { color: #00ff9c; }
-    .offline { color: #ff4d4d; }
+    .server strong {
+      display: block;
+      font-size: 1.2em;
+      margin-bottom: 0.5em;
+    }
+
+    .online { color: var(--green); font-weight: bold; }
+    .offline { color: var(--red); font-weight: bold; }
 
     .motd {
-      font-size: 0.95em;
-      margin-top: 0.3em;
-      color: #aaa;
+      font-size: 1em;
+      margin-top: 0.6em;
+      color: var(--blue);
+      font-weight: bold;
+      white-space: pre-wrap;
     }
 
     footer {
-      margin-top: 2em;
-      color: #666;
+      margin-top: 3em;
+      color: #888;
       font-size: 0.9em;
     }
 
@@ -58,7 +76,7 @@
       left: 0;
       height: 4px;
       width: 0%;
-      background-color: #66ccff;
+      background-color: var(--blue);
       transition: width 0.4s ease;
       z-index: 9999;
     }
@@ -71,8 +89,8 @@
 
   <div class="server" id="proxy">託管分支連線埠 (Velocity) 讀取中...</div>
   <div class="server" id="lobby">大廳伺服器 (Lobby) 讀取中...</div>
-  <div class="server" id="survival">生存【1】服 (Survial) 讀取中...</div>
-  <div class="server" id="creative">建造【1】服 (Creative) 讀取中...</div>
+  <div class="server" id="survival">生存1服 (Survial) 讀取中...</div>
+  <div class="server" id="creative">建造1服 (Creative) 讀取中...</div>
 
   <footer>狀態每 30 秒自動更新一次｜最後更新：<span id="last-update">尚未更新</span></footer>
 
@@ -80,28 +98,28 @@
     const servers = [
       { id: "proxy", name: "託管分支連線埠 (Velocity)", host: "mc.hsuddfps.com" },
       { id: "lobby", name: "大廳伺服器 (Lobby)", host: "mc.hsuddfps.com:30065" },
-      { id: "survival", name: "生存【1】服 (Survial)", host: "mc.hsuddfps.com:30066" },
-      { id: "creative", name: "建造【1】服 (Creative)", host: "mc.hsuddfps.com:30067" }
+      { id: "survival", name: "生存1服 (Survial)", host: "mc.hsuddfps.com:30066" },
+      { id: "creative", name: "建造1服 (Creative)", host: "mc.hsuddfps.com:30067" }
     ];
 
     async function fetchStatus(server) {
       const el = document.getElementById(server.id);
-      el.className = "server"; // reset style
-      el.innerHTML = `${server.name} 讀取中...`;
+      el.className = "server";
+      el.innerHTML = `<strong>${server.name}</strong>讀取中...`;
 
       try {
         const res = await fetch(`https://api.mcsrvstat.us/2/${server.host}`);
         const data = await res.json();
 
         if (!data.online) {
-          el.innerHTML = `<strong>${server.name}</strong>: <span class="offline">🔴 離線</span>`;
+          el.innerHTML = `<strong>${server.name}</strong><span class="offline">🔴 離線</span>`;
           el.classList.add("offline");
         } else {
-          el.innerHTML = `<strong>${server.name}</strong>: <span class="online">🟢 在線 (${data.players.online} / ${data.players.max})</span>` +
-            (data.motd?.clean ? `<div class="motd">${data.motd.clean.join(" ")}</div>` : "");
+          el.innerHTML = `<strong>${server.name}</strong><span class="online">🟢 在線 (${data.players.online} / ${data.players.max})</span>` +
+            (data.motd?.clean ? `<div class="motd">${data.motd.clean.join("\n")}</div>` : "");
         }
       } catch {
-        el.innerHTML = `<strong>${server.name}</strong>: <span class="offline">❌ 查詢失敗</span>`;
+        el.innerHTML = `<strong>${server.name}</strong><span class="offline">❌ 查詢失敗</span>`;
         el.classList.add("offline");
       }
     }
