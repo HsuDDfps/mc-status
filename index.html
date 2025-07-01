@@ -7,10 +7,11 @@
   <style>
     :root {
       --green: #00ff9c;
+      --green-dark: #00aa66;
       --red: #ff4d4d;
       --blue: #66ccff;
       --bg-dark: #0e0e0e;
-      --bg-card: #1a1a1a;
+      --bg-card: #202830;
       --text: #e0e0e0;
     }
 
@@ -37,7 +38,7 @@
       border-radius: 15px;
       max-width: 600px;
       box-shadow: 0 0 20px rgba(0, 255, 156, 0.1);
-      border: 2px solid var(--green);
+      border: 2px solid var(--green-dark);
       transition: all 0.3s ease;
     }
 
@@ -52,8 +53,15 @@
       margin-bottom: 0.5em;
     }
 
-    .online { color: var(--green); font-weight: bold; }
-    .offline { color: var(--red); font-weight: bold; }
+    .online {
+      color: var(--blue);
+      font-weight: bold;
+    }
+
+    .offline {
+      color: var(--red);
+      font-weight: bold;
+    }
 
     .motd {
       font-size: 1em;
@@ -89,8 +97,8 @@
 
   <div class="server" id="proxy">託管分支連線埠 (Velocity) 讀取中...</div>
   <div class="server" id="lobby">大廳伺服器 (Lobby) 讀取中...</div>
-  <div class="server" id="survival">生存1服 (Survial) 讀取中...</div>
-  <div class="server" id="creative">建造1服 (Creative) 讀取中...</div>
+  <div class="server" id="survival">生存【1】服 (Survial) 讀取中...</div>
+  <div class="server" id="creative">建造【1】服 (Creative) 讀取中...</div>
 
   <footer>狀態每 30 秒自動更新一次｜最後更新：<span id="last-update">尚未更新</span></footer>
 
@@ -98,8 +106,8 @@
     const servers = [
       { id: "proxy", name: "託管分支連線埠 (Velocity)", host: "mc.hsuddfps.com" },
       { id: "lobby", name: "大廳伺服器 (Lobby)", host: "mc.hsuddfps.com:30065" },
-      { id: "survival", name: "生存1服 (Survial)", host: "mc.hsuddfps.com:30066" },
-      { id: "creative", name: "建造1服 (Creative)", host: "mc.hsuddfps.com:30067" }
+      { id: "survival", name: "生存【1】服 (Survial)", host: "mc.hsuddfps.com:30066" },
+      { id: "creative", name: "建造【1】服 (Creative)", host: "mc.hsuddfps.com:30067" }
     ];
 
     async function fetchStatus(server) {
