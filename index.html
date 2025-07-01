@@ -25,10 +25,21 @@
     }
 
     h1 {
-      color: var(--green);
-      font-size: 2.5em;
       margin-bottom: 1.5em;
+    }
+
+    .title-main {
+      color: var(--green);
+      font-size: 2.4em;
       text-shadow: 0 0 15px var(--green);
+    }
+
+    .title-sub {
+      color: var(--green);
+      font-size: 1.4em;
+      font-weight: normal;
+      margin-top: 0.2em;
+      text-shadow: 0 0 10px var(--green);
     }
 
     .server {
@@ -54,7 +65,7 @@
     }
 
     .online {
-      color: var(--green); /* ← 保留綠色 */
+      color: var(--green); /* 保留綠色 */
       font-weight: bold;
     }
 
@@ -93,7 +104,10 @@
 <body>
   <div id="progress-bar"></div>
 
-  <h1>小徐麥塊伺服器 連線狀態 - Server Status</h1>
+  <h1>
+    <div class="title-main">小徐麥塊伺服器 連線狀態</div>
+    <div class="title-sub">Server Status</div>
+  </h1>
 
   <div class="server" id="proxy">託管分支連線埠 (Velocity) 讀取中...</div>
   <div class="server" id="lobby">大廳伺服器 (Lobby) 讀取中...</div>
