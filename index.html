@@ -2,35 +2,56 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>Minecraft 多伺服器狀態</title>
+  <title>Minecraft 狀態面板</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body {
-      background-color: #111;
-      color: #eee;
-      font-family: sans-serif;
+      background-color: #0e0e0e;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       text-align: center;
-      padding: 2em;
+      margin: 0;
+      padding: 2em 1em;
     }
 
     h1 {
-      color: #00ff7f;
-      text-shadow: 1px 1px 5px #00ff7f;
+      color: #00ff9c;
+      font-size: 2.2em;
+      margin-bottom: 1em;
+      text-shadow: 0 0 10px #00ff9c;
     }
 
     .server {
-      background-color: #1e1e1e;
-      padding: 1.5em;
-      border-radius: 10px;
+      background-color: #1c1c1c;
+      border-left: 6px solid #00ff9c;
       margin: 1em auto;
-      width: 90%;
-      max-width: 500px;
-      box-shadow: 0 0 10px rgba(0, 255, 127, 0.3);
+      padding: 1em;
+      border-radius: 10px;
+      max-width: 600px;
+      box-shadow: 0 0 10px rgba(0, 255, 156, 0.2);
     }
 
-    .online { color: #00ff7f; }
+    .server.offline {
+      border-left-color: #ff4d4d;
+      box-shadow: 0 0 10px rgba(255, 77, 77, 0.2);
+    }
+
+    .online { color: #00ff9c; }
     .offline { color: #ff4d4d; }
 
-    /* 頂部進度條 */
+    .motd {
+      font-size: 0.95em;
+      margin-top: 0.3em;
+      color: #aaa;
+    }
+
+    footer {
+      margin-top: 2em;
+      color: #666;
+      font-size: 0.9em;
+    }
+
+    /* 進度條 */
     #progress-bar {
       position: fixed;
       top: 0;
@@ -46,28 +67,42 @@
 <body>
   <div id="progress-bar"></div>
 
-  <h1>Minecraft Server 狀態面板</h1>
+  <h1>小徐麥塊伺服器 連線狀態 - Server Status</h1>
 
-  <div class="server" id="proxy">Proxy: 讀取中...</div>
-  <div class="server" id="lobby">Lobby: 讀取中...</div>
-  <div class="server" id="survival">Survival: 讀取中...</div>
+  <div class="server" id="proxy">Proxy 讀取中...</div>
+  <div class="server" id="lobby">大廳伺服器 (Lobby) 讀取中...</div>
+  <div class="server" id="survival">生存【1】服 讀取中...</div>
+  <div class="server" id="creative">建造【1】服 讀取中...</div>
+
+  <footer>狀態每 30 秒自動更新一次｜最後更新：<span id="last-update">尚未更新</span></footer>
 
   <script>
     const servers = [
       { id: "proxy", name: "Proxy", host: "mc.hsuddfps.com" },
-      { id: "lobby", name: "Lobby", host: "mc.hsuddfps.com:25566" },
-      { id: "survival", name: "Survival", host: "mc.hsuddfps.com:25567" }
+      { id: "lobby", name: "大廳伺服器 (Lobby)", host: "mc.hsuddfps.com:30065" },
+      { id: "survival", name: "生存【1】服", host: "mc.hsuddfps.com:30066" },
+      { id: "creative", name: "建造【1】服", host: "mc.hsuddfps.com:30067" }
     ];
 
     async function fetchStatus(server) {
-      const res = await fetch(`https://api.mcsrvstat.us/2/${server.host}`);
-      const data = await res.json();
       const el = document.getElementById(server.id);
+      el.className = "server"; // reset style
+      el.innerHTML = `${server.name} 讀取中...`;
 
-      if (!data.online) {
-        el.innerHTML = `<strong>${server.name}</strong>: <span class="offline">🟥 離線</span>`;
-      } else {
-        el.innerHTML = `<strong>${server.name}</strong>: <span class="online">🟩 在線 (${data.players.online} / ${data.players.max})<br>${data.motd.clean.join(" ")}</span>`;
+      try {
+        const res = await fetch(`https://api.mcsrvstat.us/2/${server.host}`);
+        const data = await res.json();
+
+        if (!data.online) {
+          el.innerHTML = `<strong>${server.name}</strong>: <span class="offline">🔴 離線</span>`;
+          el.classList.add("offline");
+        } else {
+          el.innerHTML = `<strong>${server.name}</strong>: <span class="online">🟢 在線 (${data.players.online} / ${data.players.max})</span>` +
+            (data.motd?.clean ? `<div class="motd">${data.motd.clean.join(" ")}</div>` : "");
+        }
+      } catch {
+        el.innerHTML = `<strong>${server.name}</strong>: <span class="offline">❌ 查詢失敗</span>`;
+        el.classList.add("offline");
       }
     }
 
@@ -75,19 +110,17 @@
       const progress = document.getElementById("progress-bar");
       progress.style.width = "0%";
       progress.style.display = "block";
-
-      // 模擬進度條逐步前進
-      setTimeout(() => { progress.style.width = "30%"; }, 100);
-      setTimeout(() => { progress.style.width = "60%"; }, 300);
+      setTimeout(() => { progress.style.width = "50%"; }, 100);
 
       await Promise.all(servers.map(fetchStatus));
 
-      // 結束進度條
       progress.style.width = "100%";
       setTimeout(() => {
         progress.style.display = "none";
         progress.style.width = "0%";
-      }, 600);
+      }, 500);
+
+      document.getElementById("last-update").textContent = new Date().toLocaleTimeString();
     }
 
     refresh();
