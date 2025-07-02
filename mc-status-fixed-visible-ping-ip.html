@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>小徐麥塊伺服器狀態</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="https://fav.farm/🖥️" type="image/x-icon">
+  <style>
+    :root {
+      --green: #6dcff4;
+      --green-dark: #3399cc;
+      --red: #ff4d4d;
+      --blue: #66ccff;
+      --bg-dark: #0e0e0e;
+      --bg-card: rgba(28, 28, 28, 0.85);
+      --text: #e0e0e0;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--text);
+      text-align: center;
+      padding: 2em 1em;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: url('https://hsuddfps.github.io/mc-status/Background_image.jpg') center/cover no-repeat;
+      filter: blur(8px) brightness(0.7);
+      z-index: -1;
+    }
+
+    h1 {
+      margin-bottom: 1.5em;
+    }
+
+    .title-main {
+      color: var(--green);
+      font-size: 2.4em;
+      text-shadow: -1px -1px 0 #000, 1px -1px 0 #000,
+                   -1px  1px 0 #000, 1px  1px 0 #000;
+    }
+
+    .title-sub {
+      color: var(--green);
+      font-size: 1.4em;
+      font-weight: bold;
+      margin-top: 0.2em;
+      text-shadow: -1px -1px 0 #000, 1px -1px 0 #000,
+                   -1px  1px 0 #000, 1px  1px 0 #000;
+    }
+
+    .server {
+      border-left: 6px solid var(--green-dark);
+      margin: 1em auto;
+      padding: 1em;
+      border-radius: 10px;
+      max-width: 600px;
+      box-shadow: 0 0 10px rgba(109, 207, 244, 0.3);
+      background-color: rgba(28, 28, 28, 0.85);
+    }
+
+    .server.offline {
+      border-left-color: var(--red);
+      background-color: rgba(40, 20, 20, 0.85);
+      box-shadow: 0 0 10px rgba(255, 77, 77, 0.3);
+    }
+
+    .online { color: var(--green); }
+    .offline { color: var(--red); }
+
+    .motd {
+      font-size: 1em;
+      margin-top: 0.6em;
+      white-space: pre-wrap;
+    }
+
+    .ping {
+      font-size: 0.9em;
+      color: #bbb;
+      margin-top: 0.3em;
+    }
+
+    .join-buttons {
+      margin-top: 2em;
+      display: flex;
+      justify-content: center;
+      gap: 1em;
+      flex-wrap: wrap;
+    }
+
+    .join-button {
+      display: inline-block;
+      background-color: var(--green-dark);
+      color: white;
+      font-weight: bold;
+      padding: 0.8em 1.6em;
+      border: none;
+      border-radius: 999px;
+      text-decoration: none;
+      box-shadow: 0 0 10px rgba(109, 207, 244, 0.4);
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      cursor: pointer;
+    }
+
+    .join-button:hover {
+      background-color: var(--green);
+      transform: scale(1.05);
+    }
+
+    .desktop-only { display: inline-block; }
+    @media (max-width: 768px) {
+      .desktop-only { display: none; }
+    }
+
+    .ip-label {
+      margin-top: 0.5em;
+      font-size: 1rem;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    footer {
+      margin-top: 2em;
+      color: #ccc;
+      font-size: 0.9em;
+    }
+
+    #progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 4px;
+      width: 0%;
+      background-color: var(--blue);
+      transition: width 0.4s ease;
+      z-index: 9999;
+    }
+  </style>
+</head>
+<body>
+  <div id="progress-bar"></div>
+
+  <h1>
+    <div class="title-main">小徐麥塊伺服器 連線狀態</div>
+    <div class="title-sub">Server Status</div>
+  </h1>
+
+  <div class="server" id="proxy">託管分支連線埠 (Velocity) 讀取中...</div>
+  <div class="server" id="lobby">大廳伺服器 (Lobby) 讀取中...</div>
+  <div class="server" id="survival">生存【1】服 (Survival) 讀取中...</div>
+  <div class="server" id="creative">建造【1】服 (Creative) 讀取中...</div>
+
+  <div class="join-buttons">
+    <button class="join-button desktop-only" onclick="launchMinecraft()">🚀 啟動 Minecraft 並加入伺服器</button>
+    <button class="join-button" onclick="copyIP()">📋 複製伺服器 IP</button>
+  </div>
+  <div class="ip-label">伺服器 IP：<span style="color:#6dcff4;">mc.hsuddfps.com</span></div>
+
+  <footer>狀態每 30 秒自動更新一次｜最後更新：<span id="last-update">尚未更新</span></footer>
+
+  <script>
+    const servers = [
+      { id: "proxy", name: "託管分支連線埠 (Velocity)", host: "mc.hsuddfps.com" },
+      { id: "lobby", name: "大廳伺服器 (Lobby)", host: "mc.hsuddfps.com:30065" },
+      { id: "survival", name: "生存【1】服 (Survival)", host: "mc.hsuddfps.com:30066" },
+      { id: "creative", name: "建造【1】服 (Creative)", host: "mc.hsuddfps.com:30067" }
+    ];
+
+    async function fetchStatus(server) {
+      const el = document.getElementById(server.id);
+      el.className = "server";
+      el.innerHTML = `${server.name} 讀取中...`;
+
+      try {
+        const res = await fetch(`https://api.mcsrvstat.us/2/${server.host}`);
+        const data = await res.json();
+
+        if (!data.online) {
+          el.innerHTML = `<strong>${server.name}</strong>: <span class="offline">🔴 離線</span>`;
+          el.classList.add("offline");
+        } else {
+          const ping = typeof data.ping === "number" ? data.ping : null;
+          el.innerHTML = `<strong>${server.name}</strong>: <span class="online">🟢 在線 (${data.players.online} / ${data.players.max})</span>` +
+            (data.motd?.html ? `<div class="motd">${data.motd.html.join("<br>")}</div>` : "") +
+            (ping !== null ? `<div class="ping">延遲：約 ${ping} ms</div>` : "");
+        }
+      } catch {
+        el.innerHTML = `<strong>${server.name}</strong>: <span class="offline">❌ 查詢失敗</span>`;
+        el.classList.add("offline");
+      }
+    }
+
+    async function refresh() {
+      const progress = document.getElementById("progress-bar");
+      progress.style.width = "0%";
+      progress.style.display = "block";
+      setTimeout(() => { progress.style.width = "50%"; }, 100);
+
+      await Promise.all(servers.map(fetchStatus));
+
+      progress.style.width = "100%";
+      setTimeout(() => {
+        progress.style.display = "none";
+        progress.style.width = "0%";
+      }, 500);
+
+      document.getElementById("last-update").textContent = new Date().toLocaleTimeString();
+    }
+
+    function copyIP() {
+      navigator.clipboard.writeText("mc.hsuddfps.com").then(() => {
+        alert("已複製 IP：mc.hsuddfps.com\n快去 Minecraft 加入吧！");
+      });
+    }
+
+    function launchMinecraft() {
+      const link = document.createElement('a');
+      link.href = "minecraft://?addExternalServer=小徐伺服器|mc.hsuddfps.com:25565";
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      setTimeout(() => {
+        alert("如果沒有自動啟動 Minecraft，請確認你是使用官方啟動器，或使用下方按鈕複製 IP 手動加入。");
+      }, 500);
+    }
+
+    refresh();
+    setInterval(refresh, 30000);
+  </script>
+</body>
+</html>
