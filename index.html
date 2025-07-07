@@ -4,13 +4,13 @@
   <meta charset="UTF-8" />
   <title>徐滴滴麥塊伺服器狀態</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="icon" href="https://fav.farm/🖥️" type="image/x-icon">
+  <link rel="icon" href="https://fav.farm/🖥️" type="image/x-icon" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
       font-family: "Poppins", sans-serif;
-      background: url("Index_BG.jpg") no-repeat center center fixed;
+      background: url("https://status.hsuddfps.com/Background_image.jpg") no-repeat center center fixed;
       background-size: cover;
       color: #fff;
       display: flex;
@@ -18,87 +18,127 @@
       min-height: 100vh;
     }
 
-    main {
+    .glass-wrapper {
       flex: 1;
+      width: 100%;
       display: flex;
-      flex-direction: column;
-      align-items: center;
+      justify-content: center;
       padding: 2rem 1rem;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(8px);
+    }
+
+    .glass {
+      width: 100%;
+      max-width: 960px;
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(12px);
+      border-radius: 1rem;
+      padding: 2.5rem 2rem;
+      text-align: center;
+      animation: fadeIn 1s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     h1 {
-      font-size: 2.5rem;
+      font-size: 2.4rem;
       margin-bottom: 0.5rem;
-      text-shadow: 0 0 10px #000;
     }
 
     .description {
-      font-size: 1.2rem;
-      margin-bottom: 2rem;
+      font-size: 1.1rem;
       color: #ccc;
+      margin-bottom: 2rem;
     }
 
     .server-list {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       gap: 1.5rem;
-      width: 100%;
-      max-width: 1000px;
+      margin-bottom: 2.5rem;
     }
 
     .server-card {
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 1rem;
-      padding: 1.5rem;
-      text-align: center;
+      padding: 1.3rem;
       backdrop-filter: blur(6px);
-      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
+      animation: cardIn 0.8s ease;
+    }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .server-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
       transition: transform 0.3s ease;
     }
 
-    .server-card:hover {
-      transform: scale(1.03);
+    .server-card:hover .server-icon {
+      transform: scale(1.1);
     }
 
     .server-name {
-      font-size: 1.2rem;
+      font-size: 1.15rem;
       font-weight: 600;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.2rem;
     }
 
     .server-host {
-      font-size: 0.95rem;
+      font-size: 0.92rem;
       color: #aaa;
+      word-break: break-all;
+      margin-bottom: 0.2rem;
     }
 
+    .motd, .players, .ping {
+      font-size: 0.85rem;
+      margin: 0.2rem 0;
+    }
+
+    .ping.green { color: #90ee90; }
+    .ping.yellow { color: #f4e66c; }
+    .ping.red { color: #ff7a7a; }
+
     .copy-section {
-      margin-top: 2rem;
       text-align: center;
     }
 
     .copy-btn {
       background: #6dcff4;
       border: none;
-      padding: 0.8rem 1.5rem;
+      padding: 0.75rem 1.6rem;
       font-size: 1rem;
       border-radius: 30px;
-      cursor: pointer;
       font-weight: 600;
+      cursor: pointer;
       color: #111;
       transition: background 0.3s;
     }
 
     .copy-btn:hover {
-      background: #58b3d6;
+      background: #4eb7d1;
     }
 
     .update-time {
-      margin-top: 0.7rem;
+      margin-top: 0.6rem;
       font-size: 0.85rem;
       color: #ccc;
+    }
+
+    .loading {
+      font-size: 1rem;
+      color: #ccc;
+      margin: 2rem 0;
     }
 
     footer {
@@ -110,31 +150,24 @@
       color: #aaa;
       padding: 1rem 0;
     }
-
-    @media (max-width: 600px) {
-      h1 {
-        font-size: 2rem;
-      }
-      .description {
-        font-size: 1rem;
-      }
-    }
   </style>
 </head>
 <body>
-  <main>
-    <h1>徐滴滴麥塊伺服器狀態</h1>
-    <div class="description">查看目前各分支伺服器的連線資訊與狀態</div>
+  <div class="glass-wrapper">
+    <div class="glass">
+      <h1>徐滴滴麥塊伺服器狀態</h1>
+      <div class="description">即時連線資訊與伺服器狀態</div>
 
-    <div class="server-list" id="serverList">
-      <!-- Cards will be injected here -->
-    </div>
+      <div class="server-list" id="serverList">
+        <div class="loading">伺服器查詢中...</div>
+      </div>
 
-    <div class="copy-section">
-      <button class="copy-btn" onclick="copyIP()">複製主伺服器 IP</button>
-      <div class="update-time" id="lastUpdated">上次更新時間：--</div>
+      <div class="copy-section">
+        <button class="copy-btn" onclick="copyIP()">複製主伺服器 IP</button>
+        <div class="update-time" id="lastUpdated">上次更新時間：--</div>
+      </div>
     </div>
-  </main>
+  </div>
 
   <footer>
     Powered by HsuDD © 2025
@@ -142,26 +175,60 @@
 
   <script>
     const servers = [
-      { id: "proxy", name: "託管分支連線埠 Velocity", host: "mc.hsuddfps.com" },
+      { id: "proxy", name: "託管分支 Velocity", host: "mc.hsuddfps.com" },
       { id: "lobby", name: "大廳服 Lobby", host: "mc.hsuddfps.com:30065" },
       { id: "survival", name: "生存服 Survival", host: "mc.hsuddfps.com:30066" },
       { id: "creative", name: "建造服 Creative", host: "mc.hsuddfps.com:30067" }
     ];
 
-    function renderServers() {
+    function getPingColor(ping) {
+      if (ping === "錯誤" || ping === "N/A") return "red";
+      const val = parseInt(ping);
+      if (val < 100) return "green";
+      if (val < 200) return "yellow";
+      return "red";
+    }
+
+    async function fetchStatus(server) {
+      try {
+        const response = await fetch(`https://api.mcstatus.io/v2/status/java/${server.host}`);
+        const data = await response.json();
+        return {
+          icon: data.favicon || "",
+          ping: data.latency?.toFixed(0) || "錯誤",
+          players: data.players?.online + " / " + data.players?.max || "不明",
+          motd: data.motd?.clean?.join(" ") || ""
+        };
+      } catch {
+        return { icon: "", ping: "錯誤", players: "無法讀取", motd: "無法連線" };
+      }
+    }
+
+    async function renderServers() {
       const container = document.getElementById("serverList");
-      container.innerHTML = servers.map(server => `
-        <div class="server-card">
+      container.innerHTML = "";
+
+      for (const server of servers) {
+        const status = await fetchStatus(server);
+        const card = document.createElement("div");
+        card.className = "server-card";
+        const pingClass = getPingColor(status.ping);
+        card.innerHTML = `
+          ${status.icon ? `<img class="server-icon" src="${status.icon}" alt="icon">` : ""}
           <div class="server-name">${server.name}</div>
           <div class="server-host">${server.host}</div>
-        </div>
-      `).join('');
+          <div class="motd">MOTD：${status.motd}</div>
+          <div class="players">在線人數：${status.players}</div>
+          <div class="ping ${pingClass}">延遲：${status.ping} ms</div>
+        `;
+        container.appendChild(card);
+      }
     }
 
     function updateTime() {
       const now = new Date();
       const formatted = now.getFullYear() + "-" +
-                        String(now.getMonth()+1).padStart(2, '0') + "-" +
+                        String(now.getMonth() + 1).padStart(2, '0') + "-" +
                         String(now.getDate()).padStart(2, '0') + " " +
                         String(now.getHours()).padStart(2, '0') + ":" +
                         String(now.getMinutes()).padStart(2, '0') + ":" +
@@ -180,7 +247,6 @@
       });
     }
 
-    // 初始化與定時刷新
     refreshAll();
     setInterval(refreshAll, 30000);
   </script>
