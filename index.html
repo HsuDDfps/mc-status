@@ -51,14 +51,11 @@
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 1rem;
-      padding: 1.3rem;
+      padding: 1.6rem;
       backdrop-filter: blur(6px);
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
       animation: fadeIn 0.8s ease;
       margin-bottom: 1.5rem;
-    }
-    .proxy-card {
-      width: 100%;
     }
     .proxy-icon {
       width: 48px;
@@ -67,29 +64,26 @@
       margin-bottom: 0.5rem;
     }
     .server-name {
-      font-size: 1.15rem;
+      font-size: 1.3rem;
       font-weight: 600;
       margin-bottom: 0.3rem;
     }
     .server-host {
-      font-size: 0.92rem;
+      font-size: 1rem;
       color: #aaa;
       margin-bottom: 0.3rem;
     }
-    .motd, .players, .ping {
-      font-size: 0.85rem;
+    .motd, .players {
+      font-size: 0.95rem;
       margin: 0.2rem 0;
     }
-    .ping.green { color: #90ee90; }
-    .ping.yellow { color: #f4e66c; }
-    .ping.red { color: #ff7a7a; }
     .sub-servers {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 1rem;
     }
     .status {
-      font-size: 0.95rem;
+      font-size: 1rem;
       font-weight: bold;
     }
     .status.online { color: #6dcff4; }
@@ -133,10 +127,8 @@
       <h1>徐滴滴麥塊伺服器狀態</h1>
       <div class="description">即時監測連線與分流伺服器狀態</div>
 
-      <!-- Proxy Full Card -->
       <div id="proxyCard" class="proxy-card">讀取中...</div>
 
-      <!-- Other Servers -->
       <div class="sub-servers" id="subServerCards">
         <div class="server-card" id="lobby">Lobby 讀取中...</div>
         <div class="server-card" id="survival">Survival 讀取中...</div>
@@ -146,6 +138,7 @@
       <div class="copy-section">
         <button class="copy-btn" onclick="copyIP()">複製主伺服器 IP</button>
         <div class="update-time" id="lastUpdated">上次更新時間：--</div>
+        <div class="update-time" id="currentTime">目前時間：--</div>
       </div>
     </div>
   </div>
@@ -156,19 +149,11 @@
 
   <script>
     const servers = {
-      proxy: { name: "託管分支 Velocity", host: "mc.hsuddfps.com" },
+      proxy: { name: "【徐滴滴麥塊伺服器】", host: "mc.hsuddfps.com" },
       lobby: { name: "大廳服 Lobby", host: "mc.hsuddfps.com:30065" },
       survival: { name: "生存服 Survival", host: "mc.hsuddfps.com:30066" },
       creative: { name: "建造服 Creative", host: "mc.hsuddfps.com:30067" }
     };
-
-    function getPingColor(ping) {
-      if (ping === "錯誤" || ping === "N/A") return "red";
-      const val = parseInt(ping);
-      if (val < 100) return "green";
-      if (val < 200) return "yellow";
-      return "red";
-    }
 
     async function fetchStatus(host) {
       try {
@@ -187,8 +172,7 @@
         proxyCard.innerHTML = `<div class="server-name">${servers.proxy.name}</div>
         <div class="status offline">離線</div>`;
       } else {
-        const ping = proxy.debug?.ping || "N/A";
-        const motd = proxy.motd?.clean?.join(" ") || "無 MOTD";
+        const motd = proxy.motd?.html?.join("<br>") || "";
         const players = proxy.players ? `${proxy.players.online} / ${proxy.players.max}` : "無法取得";
         const icon = proxy.icon ? `<img class="proxy-icon" src="${proxy.icon}" />` : "";
 
@@ -196,9 +180,8 @@
           ${icon}
           <div class="server-name">${servers.proxy.name}</div>
           <div class="server-host">${servers.proxy.host}</div>
-          <div class="motd">MOTD：${motd}</div>
-          <div class="players">在線人數：${players}</div>
-          <div class="ping ${getPingColor(ping)}">延遲：約 ${ping} ms</div>`;
+          <div class="motd">${motd}</div>
+          <div class="players">在線人數：${players}</div>`;
       }
 
       for (const id of ["lobby", "survival", "creative"]) {
@@ -222,6 +205,13 @@
 
     renderStatus();
     setInterval(renderStatus, 30000);
+
+    // 每秒更新目前時間
+    setInterval(() => {
+      const now = new Date();
+      document.getElementById("currentTime").textContent =
+        "目前時間：" + now.toLocaleString("zh-TW");
+    }, 1000);
   </script>
 </body>
 </html>
