@@ -1,217 +1,370 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
-  <title>徐滴滴麥塊伺服器狀態</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="icon" href="Minecraft_Icon.png" type="image/png" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HsuDDfps 麥塊伺服器資訊</title>
+  <link rel="icon" href="Minecraft_Icon.png" />
+  <meta name="color-scheme" content="light dark" />
   <style>
-    body {
-      margin: 0;
-      font-family: "Poppins", sans-serif;
-      background: url("https://status.hsuddfps.com/Index_BG.jpg") no-repeat center center fixed;
-      background-size: cover;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
+    :root{
+      --bg: #f7f5ff;
+      --bg-accent: #ede9ff;
+      --glass: rgba(255,255,255,0.6);
+      --text: #2b2240;
+      --muted: #6f6790;
+      --primary: #b9a7ff;     /* 淺紫主色 */
+      --primary-strong:#7f69ff;
+      --ok: #2ecc71;
+      --bad:#ff5c7a;
+      --warn:#f1c40f;
+      --chip:#e9e4ff;
+      --shadow: 0 20px 60px rgba(95,67,200,.15);
+      --radius: 18px;
     }
-    .glass-wrapper {
-      flex: 1;
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      padding: 2rem 1rem;
+    *{box-sizing:border-box}
+    html,body{
+      height:100%;
+      margin:0;
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                   "Noto Sans TC","PingFang TC","Microsoft JhengHei", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color:var(--text);
+      background: var(--bg) no-repeat center/cover fixed url('Index_BG.jpg');
     }
-    .glass {
-      width: 100%;
-      max-width: 960px;
-      background: rgba(0, 0, 0, 0.55);
-      backdrop-filter: blur(12px);
-      border-radius: 1rem;
-      padding: 2.5rem 2rem;
-      text-align: center;
-      animation: fadeIn 1s ease;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    h1 {
-      font-size: 2.4rem;
-      margin-bottom: 0.5rem;
-    }
-    .description {
-      font-size: 1.1rem;
-      color: #ccc;
-      margin-bottom: 2rem;
-    }
-    .server-card, .proxy-card {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 1rem;
-      padding: 1.6rem;
+    .backdrop{
+      position:fixed; inset:0;
+      background: linear-gradient(180deg, rgba(255,255,255,.5), rgba(255,255,255,.3));
       backdrop-filter: blur(6px);
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
-      animation: fadeIn 0.8s ease;
-      margin-bottom: 1.5rem;
     }
-    .proxy-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 8px;
-      margin-bottom: 0.5rem;
+    .page{
+      position:relative;
+      min-height:100%;
+      display:grid;
+      place-items:center;
+      padding: 24px;
     }
-    .server-name {
-      font-size: 1.3rem;
-      font-weight: 600;
-      margin-bottom: 0.3rem;
+    .hud{
+      position: fixed;
+      top: 18px; left: 18px; right: 18px;
+      display:flex; align-items:center; justify-content:space-between;
+      gap: 12px;
+      opacity:0; transform: translateY(-8px);
+      animation: fadeDown .7s ease .15s forwards;
     }
-    .server-host {
-      font-size: 1rem;
-      color: #aaa;
-      margin-bottom: 0.3rem;
+    .hud .pill{
+      padding:10px 14px;
+      border-radius: 999px;
+      background: var(--glass);
+      box-shadow: var(--shadow);
+      display:flex; align-items:center; gap:10px;
+      border: 1px solid rgba(127,105,255,.25);
     }
-    .motd, .players {
-      font-size: 0.95rem;
-      margin: 0.2rem 0;
+    .hud .label{ color: var(--muted); font-weight:600; letter-spacing:.3px }
+    .hud .time{ font-variant-numeric: tabular-nums; font-weight:700 }
+    .card{
+      width:min(920px, 100%);
+      background: var(--glass);
+      border: 1px solid rgba(127,105,255,.25);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 26px;
+      transform: translateY(16px) scale(.985);
+      opacity:0;
+      animation: rise .8s cubic-bezier(.2,.75,.2,1) .1s forwards;
     }
-    .sub-servers {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 1rem;
+    .head{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      border-bottom:1px dashed rgba(127,105,255,.35);
+      padding-bottom: 18px; margin-bottom: 18px;
     }
-    .status {
-      font-size: 1rem;
-      font-weight: bold;
+    .title{
+      display:flex; align-items:center; gap:14px;
     }
-    .status.online { color: #6dcff4; }
-    .status.offline { color: #ff4d4d; }
-    .copy-section {
-      margin-top: 2rem;
+    .dot{
+      width:12px; height:12px; border-radius:50%;
+      box-shadow: 0 0 0 4px rgba(255,255,255,.6) inset;
     }
-    .copy-btn {
-      background: #6dcff4;
-      border: none;
-      padding: 0.75rem 1.6rem;
-      font-size: 1rem;
-      border-radius: 30px;
-      font-weight: 600;
-      cursor: pointer;
-      color: #111;
-      transition: background 0.3s;
+    .status{
+      display:flex; align-items:center; gap:10px;
+      padding:8px 12px; border-radius:999px;
+      background: var(--chip); color: var(--text);
+      font-weight:700; letter-spacing:.3px;
     }
-    .copy-btn:hover {
-      background: #4eb7d1;
+    .srv{
+      font-size: 1.25rem; font-weight: 800;
+      letter-spacing:.3px;
     }
-    .update-time {
-      margin-top: 0.6rem;
-      font-size: 0.85rem;
-      color: #ccc;
+    .muted{ color: var(--muted) }
+    .grid{
+      display:grid; gap:14px;
+      grid-template-columns: repeat(12, 1fr);
     }
-    footer {
-      position: relative;
-      bottom: 15px;
-      width: 100%;
-      text-align: center;
-      font-size: 0.9rem;
-      color: #aaa;
-      padding: 1rem 0;
+    .box{
+      background: rgba(255,255,255,.55);
+      border: 1px solid rgba(127,105,255,.25);
+      border-radius: 14px;
+      padding: 16px;
+      min-height: 60px;
+    }
+    .box h4{
+      margin:0 0 6px; font-size:.9rem; color: var(--muted); font-weight:700; letter-spacing:.4px
+    }
+    .motd{
+      line-height:1.65;
+      word-break: break-word;
+    }
+    .big{
+      font-size: 1.4rem; font-weight:800; letter-spacing:.4px;
+      font-variant-numeric: tabular-nums;
+    }
+    .row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap }
+    .btn{
+      appearance:none; border:none; cursor:pointer;
+      padding: 10px 14px; border-radius: 12px;
+      font-weight: 800; letter-spacing:.3px;
+      background: linear-gradient(180deg, var(--primary), var(--primary-strong));
+      color: white;
+      box-shadow: 0 10px 30px rgba(127,105,255,.35);
+      transition: transform .06s ease, filter .2s ease;
+    }
+    .btn:active{ transform: translateY(1px) }
+    .btn.ghost{
+      background: transparent; color: var(--primary-strong);
+      border: 2px solid var(--primary-strong);
+      box-shadow:none;
+    }
+    .ip{
+      padding:8px 12px; border-radius: 10px;
+      background: var(--bg-accent);
+      font-variant-numeric: tabular-nums; font-weight:700;
+    }
+    .footer{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px; margin-top:16px;
+      color: var(--muted);
+    }
+    .tiny{ font-size:.9rem; }
+    .spinner{
+      width:16px; height:16px; border-radius:50%;
+      border: 2px solid rgba(127,105,255,.35);
+      border-top-color: var(--primary-strong);
+      animation: spin .9s linear infinite;
+    }
+    .fade{ opacity:.7; transition: opacity .2s ease }
+    .ok{ background: #eafaf1; border-color:#c8efd9 }
+    .bad{ background: #ffebf0; border-color:#ffd0dc }
+    .center{ display:flex; align-items:center; justify-content:center; gap:8px; }
+    @keyframes rise{
+      to{ transform:none; opacity:1 }
+    }
+    @keyframes fadeDown{
+      to{ transform:none; opacity:1 }
+    }
+    @keyframes spin{
+      to{ transform: rotate(360deg) }
+    }
+    @media (max-width:720px){
+      .grid{ grid-template-columns: repeat(6, 1fr) }
     }
   </style>
 </head>
 <body>
-  <div class="glass-wrapper">
-    <div class="glass">
-      <h1>徐滴滴麥塊伺服器狀態</h1>
-      <div class="description">即時監測連線與分流伺服器狀態</div>
-
-      <div id="proxyCard" class="proxy-card">讀取中...</div>
-
-      <div class="sub-servers" id="subServerCards">
-        <div class="server-card" id="lobby">Lobby 讀取中...</div>
-        <div class="server-card" id="survival">Survival 讀取中...</div>
-        <div class="server-card" id="creative">Creative 讀取中...</div>
+  <div class="backdrop" aria-hidden="true"></div>
+  <div class="page">
+    <!-- HUD: 現在時間 / 上次更新 -->
+    <div class="hud">
+      <div class="pill">
+        <span class="label">現在時間</span>
+        <span id="now" class="time">—</span>
       </div>
-
-      <div class="copy-section">
-        <button class="copy-btn" onclick="copyIP()">複製伺服器 IP 連線位址</button>
-        <div class="update-time" id="lastUpdated">上次更新時間：--</div>
-        <div class="update-time" id="currentTime">目前時間：--</div>
+      <div class="pill">
+        <span class="label">上次更新</span>
+        <span id="last" class="time">—</span>
       </div>
     </div>
+
+    <main class="card" id="card">
+      <header class="head">
+        <div class="title">
+          <div id="statusDot" class="dot" style="background: var(--warn)"></div>
+          <div>
+            <div class="srv" id="serverName">—</div>
+            <div class="muted tiny">mc.hsuddfps.com</div>
+          </div>
+        </div>
+        <div class="status" id="statusBadge">
+          <div class="spinner" id="spin"></div>
+          <span id="statusText">查詢中…</span>
+        </div>
+      </header>
+
+      <section class="grid" aria-live="polite" aria-busy="true">
+        <div class="box" style="grid-column: span 12">
+          <h4>伺服器 MOTD</h4>
+          <div id="motd" class="motd">—</div>
+        </div>
+
+        <div class="box ok" style="grid-column: span 6" id="playersBox">
+          <h4>在線人數</h4>
+          <div class="big"><span id="players">—</span></div>
+        </div>
+
+        <div class="box" style="grid-column: span 6">
+          <h4>IP 位址</h4>
+          <div class="row">
+            <code class="ip" id="ipText">mc.hsuddfps.com</code>
+            <button class="btn" id="copyBtn" type="button">複製 IP</button>
+          </div>
+        </div>
+
+        <div class="box" style="grid-column: span 12">
+          <h4>玩家列表</h4>
+          <div id="playerList" class="tiny muted">—</div>
+        </div>
+      </section>
+
+      <div class="footer">
+        <div class="row tiny">
+          <span>資料來源：</span>
+          <a class="btn ghost tiny" href="https://api.mcsrvstat.us/3/mc.hsuddfps.com" target="_blank" rel="noopener">mcsrvstat.us</a>
+        </div>
+        <div class="row tiny">
+          <span id="refreshState" class="muted">每 30 秒自動更新</span>
+          <button class="btn ghost tiny" id="refreshBtn" type="button" title="立即重新整理">手動更新</button>
+        </div>
+      </div>
+    </main>
   </div>
 
-  <footer>
-    Powered by HsuDD © 2025
-  </footer>
-
   <script>
-    const servers = {
-      proxy: { name: "【徐滴滴麥塊伺服器】", host: "mc.hsuddfps.com" },
-      lobby: { name: "大廳服 Lobby", host: "mc.hsuddfps.com:30065" },
-      survival: { name: "生存服 Survival", host: "mc.hsuddfps.com:30066" },
-      creative: { name: "建造服 Creative", host: "mc.hsuddfps.com:30067" }
-    };
+    // ===== 可調整參數 =====
+    const HOST = "mc.hsuddfps.com";
+    const API  = `https://api.mcsrvstat.us/3/${HOST}`;
+    const REFRESH_MS = 30_000;
+    const TIMEZONE = "Asia/Taipei"; // 固定台北時間
 
-    async function fetchStatus(host) {
-      try {
-        const res = await fetch(`https://api.mcsrvstat.us/2/${host}`);
-        return await res.json();
-      } catch {
-        return { online: false };
+    // ===== 小工具：時間格式 YYYY/MM/DD HH:MM (24h) =====
+    const fmt = new Intl.DateTimeFormat("zh-Hant", {
+      timeZone: TIMEZONE,
+      year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", hour12: false
+    });
+    function formatYMDHM(d){
+      // Intl 會輸出 "2025/09/24 14:05" 類似格式（已是 24h）
+      // 但為確保斜線與空格一致，用 formatToParts 組裝
+      const parts = fmt.formatToParts(d).reduce((acc,p)=> (acc[p.type]=p.value, acc), {});
+      return `${parts.year}/${parts.month}/${parts.day} ${parts.hour}:${parts.minute}`;
+    }
+
+    // ===== DOM =====
+    const $ = (sel)=>document.querySelector(sel);
+    const nowEl   = $("#now");
+    const lastEl  = $("#last");
+    const statDot = $("#statusDot");
+    const statTxt = $("#statusText");
+    const spinEl  = $("#spin");
+    const nameEl  = $("#serverName");
+    const motdEl  = $("#motd");
+    const playersEl = $("#players");
+    const playersBox = $("#playersBox");
+    const ipEl    = $("#ipText");
+    const listEl  = $("#playerList");
+    const refreshBtn = $("#refreshBtn");
+    const refreshState = $("#refreshState");
+    const copyBtn = $("#copyBtn");
+
+    // ===== 時鐘 =====
+    function tickClock(){
+      nowEl.textContent = formatYMDHM(new Date());
+    }
+    setInterval(tickClock, 1000);
+    tickClock();
+
+    // ===== 複製 IP =====
+    copyBtn.addEventListener("click", async ()=>{
+      try{
+        await navigator.clipboard.writeText(HOST);
+        copyBtn.textContent = "已複製！";
+        setTimeout(()=> copyBtn.textContent = "複製 IP", 1200);
+      }catch{
+        alert("無法複製，請手動選取。");
+      }
+    });
+
+    // ===== 取得狀態 =====
+    let timer = null;
+    async function fetchStatus(manual=false){
+      // UI: loading 狀態
+      spinEl.style.display = "inline-block";
+      statTxt.textContent = "更新中…";
+      refreshBtn.disabled = true;
+      refreshState.textContent = manual ? "正在更新…" : "每 30 秒自動更新";
+
+      try{
+        const res = await fetch(API, { cache: "no-store" });
+        const data = await res.json();
+
+        // 伺服器名稱
+        const sName = data.hostname || data.debug?.ipinsrv || HOST;
+        nameEl.textContent = sName;
+
+        // 狀態
+        const online = !!data.online;
+        const dotColor = online ? getComputedStyle(document.documentElement).getPropertyValue('--ok') : getComputedStyle(document.documentElement).getPropertyValue('--bad');
+        statDot.style.background = online ? "var(--ok)" : "var(--bad)";
+        statTxt.textContent = online ? "線上" : "離線";
+
+        // MOTD：若有提供 HTML（含彩色字元），否則使用 clean/raw
+        const motdHtml = data.motd?.html?.join("<br>") ?? null;
+        if(motdHtml){
+          motdEl.innerHTML = motdHtml;
+        }else{
+          const motdText = data.motd?.clean?.join("\n") ?? data.motd?.raw?.join("\n") ?? "—";
+          motdEl.textContent = motdText;
+        }
+
+        // 玩家
+        const count = data.players?.online ?? 0;
+        const max   = data.players?.max ?? 0;
+        playersEl.textContent = online ? `${count} / ${max || "?"}` : "—";
+        playersBox.classList.toggle("ok", online);
+        playersBox.classList.toggle("bad", !online);
+
+        // 玩家列表
+        const list = data.players?.list;
+        if(online && Array.isArray(list) && list.length){
+          listEl.textContent = list.join(", ");
+          listEl.classList.remove("muted");
+        }else{
+          listEl.textContent = online ? "目前無公開玩家列表" : "伺服器離線";
+          listEl.classList.add("muted");
+        }
+
+        // IP 顯示
+        ipEl.textContent = HOST;
+
+        // 更新時間
+        const now = new Date();
+        lastEl.textContent = formatYMDHM(now);
+      }catch(e){
+        statDot.style.background = "var(--warn)";
+        statTxt.textContent = "更新失敗";
+        motdEl.textContent = "無法取得資料，請稍後再試。";
+        playersEl.textContent = "—";
+        listEl.textContent = "—";
+      }finally{
+        spinEl.style.display = "none";
+        refreshBtn.disabled = false;
+        refreshState.textContent = "每 30 秒自動更新";
       }
     }
 
-    async function renderStatus() {
-      const proxy = await fetchStatus(servers.proxy.host);
-      const proxyCard = document.getElementById("proxyCard");
+    // 手動刷新
+    refreshBtn.addEventListener("click", ()=> fetchStatus(true));
 
-      if (!proxy.online) {
-        proxyCard.innerHTML = `<div class="server-name">${servers.proxy.name}</div>
-        <div class="status offline">離線</div>`;
-      } else {
-        const motd = proxy.motd?.html?.join("<br>") || "";
-        const players = proxy.players ? `${proxy.players.online} / ${proxy.players.max}` : "無法取得";
-        const icon = proxy.icon ? `<img class="proxy-icon" src="${proxy.icon}" />` : "";
-
-        proxyCard.innerHTML = `
-          ${icon}
-          <div class="server-name">${servers.proxy.name}</div>
-          <div class="server-host">${servers.proxy.host}</div>
-          <div class="motd">${motd}</div>
-          <div class="players">在線人數：${players}</div>`;
-      }
-
-      for (const id of ["lobby", "survival", "creative"]) {
-        const server = servers[id];
-        const data = await fetchStatus(server.host);
-        const el = document.getElementById(id);
-        el.innerHTML = `<div class="server-name">${server.name}</div>` +
-                       `<div class="status ${data.online ? "online" : "offline"}">${data.online ? "🟢 在線" : "🔴 離線"}</div>`;
-      }
-
-      const now = new Date();
-      document.getElementById("lastUpdated").textContent =
-        "上次更新時間：" + now.toLocaleString("zh-TW");
-    }
-
-    function copyIP() {
-      navigator.clipboard.writeText("mc.hsuddfps.com").then(() => {
-        alert("IP 已複製到剪貼簿！");
-      });
-    }
-
-    renderStatus();
-    setInterval(renderStatus, 30000);
-
-    // 每秒更新目前時間
-    setInterval(() => {
-      const now = new Date();
-      document.getElementById("currentTime").textContent =
-        "目前時間：" + now.toLocaleString("zh-TW");
-    }, 1000);
+    // 首次與輪詢
+    fetchStatus();
+    timer = setInterval(fetchStatus, REFRESH_MS);
   </script>
 </body>
 </html>
